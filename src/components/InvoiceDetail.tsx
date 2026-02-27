@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { Invoice, InvoiceStatus, getInvoiceTotal } from "@/types/invoice";
+import { Invoice, InvoiceStatus, getInvoiceTotal, getInvoiceSubtotal, getInvoiceTotalGst, getItemTaxableValue, getItemGst, formatINR } from "@/types/invoice";
+import { SellerDetails } from "@/types/invoice";
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,9 +12,10 @@ interface InvoiceDetailProps {
   getInvoice: (id: string) => Invoice | undefined;
   updateStatus: (id: string, status: InvoiceStatus) => void;
   deleteInvoice: (id: string) => void;
+  seller: SellerDetails;
 }
 
-export const InvoiceDetail = ({ getInvoice, updateStatus, deleteInvoice }: InvoiceDetailProps) => {
+export const InvoiceDetail = ({ getInvoice, updateStatus, deleteInvoice, seller }: InvoiceDetailProps) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const invoice = getInvoice(id!);
@@ -27,6 +29,8 @@ export const InvoiceDetail = ({ getInvoice, updateStatus, deleteInvoice }: Invoi
     );
   }
 
+  const subtotal = getInvoiceSubtotal(invoice.items);
+  const totalGst = getInvoiceTotalGst(invoice.items);
   const total = getInvoiceTotal(invoice.items);
 
   const handleDelete = () => {
@@ -50,7 +54,7 @@ export const InvoiceDetail = ({ getInvoice, updateStatus, deleteInvoice }: Invoi
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => generateInvoicePDF(invoice)}>
+          <Button variant="outline" size="sm" onClick={() => generateInvoicePDF(invoice, seller)}>
             <Download className="h-3.5 w-3.5 mr-1.5" /> PDF
           </Button>
           <Button variant="outline" size="sm" className="text-destructive hover:bg-destructive hover:text-destructive-foreground" onClick={handleDelete}>
@@ -67,9 +71,7 @@ export const InvoiceDetail = ({ getInvoice, updateStatus, deleteInvoice }: Invoi
             <p className="text-xs text-muted-foreground">Update the status of this invoice</p>
           </div>
           <Select value={invoice.status} onValueChange={(v) => updateStatus(invoice.id, v as InvoiceStatus)}>
-            <SelectTrigger className="w-36">
-              <SelectValue />
-            </SelectTrigger>
+            <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="sent">Sent</SelectItem>
@@ -82,13 +84,13 @@ export const InvoiceDetail = ({ getInvoice, updateStatus, deleteInvoice }: Invoi
 
       {/* Client Info */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Client</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-base">Customer Details</CardTitle></CardHeader>
         <CardContent className="grid gap-1 text-sm">
-          <p className="font-medium">{invoice.clientName}</p>
-          <p className="text-muted-foreground">{invoice.clientEmail}</p>
+          <p className="font-medium">M/S {invoice.clientName}</p>
           <p className="text-muted-foreground">{invoice.clientAddress}</p>
+          {invoice.clientPhone && <p className="text-muted-foreground">Phone: {invoice.clientPhone}</p>}
+          {invoice.clientGstin && <p className="text-muted-foreground font-mono text-xs">GSTIN: {invoice.clientGstin}</p>}
+          {invoice.placeOfSupply && <p className="text-muted-foreground text-xs">Place of Supply: {invoice.placeOfSupply}</p>}
         </CardContent>
       </Card>
 
@@ -97,40 +99,69 @@ export const InvoiceDetail = ({ getInvoice, updateStatus, deleteInvoice }: Invoi
         <CardContent className="flex gap-8 py-4 text-sm">
           <div>
             <p className="text-muted-foreground text-xs">Issue Date</p>
-            <p className="font-medium">{new Date(invoice.issueDate).toLocaleDateString()}</p>
+            <p className="font-medium">{new Date(invoice.issueDate).toLocaleDateString("en-IN")}</p>
           </div>
           <div>
             <p className="text-muted-foreground text-xs">Due Date</p>
-            <p className="font-medium">{new Date(invoice.dueDate).toLocaleDateString()}</p>
+            <p className="font-medium">{new Date(invoice.dueDate).toLocaleDateString("en-IN")}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs">GST Type</p>
+            <p className="font-medium">{invoice.gstType === "intra" ? "CGST + SGST" : "IGST"}</p>
           </div>
         </CardContent>
       </Card>
 
       {/* Line Items */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Items</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-base">Items</CardTitle></CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <div className="grid grid-cols-12 text-xs text-muted-foreground font-medium uppercase tracking-wider pb-2 border-b">
-              <span className="col-span-6">Description</span>
-              <span className="col-span-2 text-center">Qty</span>
-              <span className="col-span-2 text-right">Price</span>
-              <span className="col-span-2 text-right">Amount</span>
+          <div className="space-y-2 overflow-x-auto">
+            <div className="grid grid-cols-12 text-xs text-muted-foreground font-medium uppercase tracking-wider pb-2 border-b min-w-[600px]">
+              <span className="col-span-4">Description</span>
+              <span className="col-span-1">HSN</span>
+              <span className="col-span-1 text-center">Qty</span>
+              <span className="col-span-2 text-right">Rate</span>
+              <span className="col-span-2 text-right">Taxable</span>
+              <span className="col-span-2 text-right">GST</span>
             </div>
             {invoice.items.map((item) => (
-              <div key={item.id} className="grid grid-cols-12 text-sm py-2">
-                <span className="col-span-6">{item.description}</span>
-                <span className="col-span-2 text-center font-mono">{item.quantity}</span>
-                <span className="col-span-2 text-right font-mono">${item.unitPrice.toFixed(2)}</span>
-                <span className="col-span-2 text-right font-mono font-medium">${(item.quantity * item.unitPrice).toFixed(2)}</span>
+              <div key={item.id} className="grid grid-cols-12 text-sm py-2 min-w-[600px]">
+                <span className="col-span-4">{item.description}</span>
+                <span className="col-span-1 font-mono text-xs">{item.hsnSac}</span>
+                <span className="col-span-1 text-center font-mono">{item.quantity} {item.unit}</span>
+                <span className="col-span-2 text-right font-mono">{formatINR(item.unitPrice)}</span>
+                <span className="col-span-2 text-right font-mono">{formatINR(getItemTaxableValue(item))}</span>
+                <span className="col-span-2 text-right font-mono text-xs">{item.gstRate}% = {formatINR(getItemGst(item))}</span>
               </div>
             ))}
             <div className="flex justify-end pt-4 border-t">
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">Total</p>
-                <p className="text-2xl font-bold font-mono">${total.toFixed(2)}</p>
+              <div className="text-right space-y-1">
+                <div className="flex justify-between gap-8 text-sm">
+                  <span className="text-muted-foreground">Taxable Amount</span>
+                  <span className="font-mono">{formatINR(subtotal)}</span>
+                </div>
+                {invoice.gstType === "intra" ? (
+                  <>
+                    <div className="flex justify-between gap-8 text-sm">
+                      <span className="text-muted-foreground">CGST</span>
+                      <span className="font-mono">{formatINR(totalGst / 2)}</span>
+                    </div>
+                    <div className="flex justify-between gap-8 text-sm">
+                      <span className="text-muted-foreground">SGST</span>
+                      <span className="font-mono">{formatINR(totalGst / 2)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between gap-8 text-sm">
+                    <span className="text-muted-foreground">IGST</span>
+                    <span className="font-mono">{formatINR(totalGst)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between gap-8 pt-2 border-t text-lg font-bold">
+                  <span>Total</span>
+                  <span className="font-mono">{formatINR(total)}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -139,11 +170,9 @@ export const InvoiceDetail = ({ getInvoice, updateStatus, deleteInvoice }: Invoi
 
       {invoice.notes && (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Notes</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="text-base">Terms & Notes</CardTitle></CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">{invoice.notes}</p>
+            <p className="text-sm text-muted-foreground whitespace-pre-wrap">{invoice.notes}</p>
           </CardContent>
         </Card>
       )}

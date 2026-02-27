@@ -1,12 +1,16 @@
 import { InvoiceForm } from "@/components/InvoiceForm";
-import { useInvoices } from "@/hooks/useInvoices";
+import { Invoice, SellerDetails } from "@/types/invoice";
 
-const CreateInvoice = () => {
-  const { addInvoice, nextInvoiceNumber } = useInvoices();
+interface CreateInvoiceProps {
+  addInvoice: (invoice: Invoice) => void;
+  nextInvoiceNumber: () => string;
+  seller: SellerDetails;
+}
 
+const CreateInvoice = ({ addInvoice, nextInvoiceNumber, seller }: CreateInvoiceProps) => {
   return (
     <div className="min-h-screen bg-background px-4 py-8">
-      <InvoiceForm invoiceNumber={nextInvoiceNumber()} onSubmit={addInvoice} />
+      <InvoiceForm invoiceNumber={nextInvoiceNumber()} seller={seller} onSubmit={addInvoice} />
     </div>
   );
 };

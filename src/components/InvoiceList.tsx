@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Invoice, InvoiceStatus, getInvoiceTotal } from "@/types/invoice";
+import { Invoice, InvoiceStatus, getInvoiceTotal, formatINR } from "@/types/invoice";
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -42,18 +42,18 @@ export const InvoiceList = ({ invoices }: InvoiceListProps) => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Invoices</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Manage and track your invoices
-          </p>
+          <p className="text-sm text-muted-foreground mt-1">Manage and track your invoices</p>
         </div>
-        <Link to="/new">
-          <Button>
-            <Plus className="h-4 w-4 mr-2" /> New Invoice
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link to="/settings">
+            <Button variant="outline">Settings</Button>
+          </Link>
+          <Link to="/new">
+            <Button><Plus className="h-4 w-4 mr-2" /> New Invoice</Button>
+          </Link>
+        </div>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
           <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Total Invoices</p>
@@ -61,41 +61,28 @@ export const InvoiceList = ({ invoices }: InvoiceListProps) => {
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Outstanding</p>
-          <p className="text-2xl font-bold font-mono mt-1">${totalOutstanding.toFixed(2)}</p>
+          <p className="text-2xl font-bold font-mono mt-1">{formatINR(totalOutstanding)}</p>
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Paid</p>
-          <p className="text-2xl font-bold font-mono mt-1 text-success">${totalPaid.toFixed(2)}</p>
+          <p className="text-2xl font-bold font-mono mt-1 text-success">{formatINR(totalPaid)}</p>
         </Card>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search invoices..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
+          <Input placeholder="Search invoices..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
         <div className="flex gap-1">
           {statusFilters.map((f) => (
-            <Button
-              key={f.value}
-              variant={filter === f.value ? "default" : "outline"}
-              size="sm"
-              onClick={() => setFilter(f.value)}
-              className="text-xs"
-            >
+            <Button key={f.value} variant={filter === f.value ? "default" : "outline"} size="sm" onClick={() => setFilter(f.value)} className="text-xs">
               {f.label}
             </Button>
           ))}
         </div>
       </div>
 
-      {/* List */}
       {filtered.length === 0 ? (
         <Card className="p-12 text-center">
           <FileText className="h-10 w-10 mx-auto text-muted-foreground/50 mb-3" />
@@ -118,10 +105,10 @@ export const InvoiceList = ({ invoices }: InvoiceListProps) => {
                         <p className="font-semibold text-sm">{invoice.clientName}</p>
                         <InvoiceStatusBadge status={invoice.status} />
                       </div>
-                      <p className="text-xs text-muted-foreground font-mono">{invoice.invoiceNumber} · {new Date(invoice.issueDate).toLocaleDateString()}</p>
+                      <p className="text-xs text-muted-foreground font-mono">{invoice.invoiceNumber} · {new Date(invoice.issueDate).toLocaleDateString("en-IN")}</p>
                     </div>
                   </div>
-                  <p className="font-bold font-mono">${getInvoiceTotal(invoice.items).toFixed(2)}</p>
+                  <p className="font-bold font-mono">{formatINR(getInvoiceTotal(invoice.items))}</p>
                 </div>
               </Card>
             </Link>
