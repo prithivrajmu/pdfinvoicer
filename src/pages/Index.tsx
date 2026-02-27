@@ -1,9 +1,7 @@
+import { Invoice } from "@/types/invoice";
 import { InvoiceList } from "@/components/InvoiceList";
-import { useInvoices } from "@/hooks/useInvoices";
 
-const Index = () => {
-  const { invoices } = useInvoices();
-
+const Index = ({ invoices }: { invoices: Invoice[] }) => {
   return (
     <div className="min-h-screen bg-background px-4 py-8">
       <InvoiceList invoices={invoices} />
