@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useAppStore } from "@/stores/appStore";
 import { Customer } from "@/types/customer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,31 +9,27 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Plus, Pencil, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 
-interface Props {
-  customers: Customer[];
-  addCustomer: (c: Omit<Customer, "id">) => Customer;
-  updateCustomer: (id: string, updates: Partial<Customer>) => void;
-  deleteCustomer: (id: string) => void;
-}
-
 const emptyForm = { name: "", phone: "", email: "", address: "", gstin: "", placeOfSupply: "" };
 
-const CustomersPage = ({ customers, addCustomer, updateCustomer, deleteCustomer }: Props) => {
+const CustomersPage = () => {
   const navigate = useNavigate();
+  const { userId } = useAuth();
+  const { customers, addCustomer, updateCustomer, deleteCustomer } = useAppStore();
   const [editing, setEditing] = useState<Customer | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [open, setOpen] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.name.trim()) { toast.error("Name is required"); return; }
     if (editing) {
-      updateCustomer(editing.id, form);
+      await updateCustomer(userId, editing.id, form);
       toast.success("Customer updated");
     } else {
-      addCustomer(form);
+      await addCustomer(userId, form);
       toast.success("Customer added");
     }
     setForm(emptyForm);
@@ -45,10 +43,11 @@ const CustomersPage = ({ customers, addCustomer, updateCustomer, deleteCustomer 
     setOpen(true);
   };
 
-  const openNew = () => {
-    setEditing(null);
-    setForm(emptyForm);
-    setOpen(true);
+  const openNew = () => { setEditing(null); setForm(emptyForm); setOpen(true); };
+
+  const handleDelete = async (id: string) => {
+    await deleteCustomer(userId, id);
+    toast.success("Customer deleted");
   };
 
   return (
@@ -71,36 +70,16 @@ const CustomersPage = ({ customers, addCustomer, updateCustomer, deleteCustomer 
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-sm">
-              <DialogHeader>
-                <DialogTitle className="text-base">{editing ? "Edit" : "Add"} Customer</DialogTitle>
-              </DialogHeader>
+              <DialogHeader><DialogTitle className="text-base">{editing ? "Edit" : "Add"} Customer</DialogTitle></DialogHeader>
               <div className="grid gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Name *</Label>
-                  <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Customer name" className="h-9 text-sm" />
-                </div>
+                <div className="space-y-1"><Label className="text-xs">Name *</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Customer name" className="h-9 text-sm" /></div>
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs">Phone</Label>
-                    <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="9876543210" className="h-9 text-sm" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Email</Label>
-                    <Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="email@co.in" className="h-9 text-sm" />
-                  </div>
+                  <div className="space-y-1"><Label className="text-xs">Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="9876543210" className="h-9 text-sm" /></div>
+                  <div className="space-y-1"><Label className="text-xs">Email</Label><Input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="email@co.in" className="h-9 text-sm" /></div>
                 </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">GSTIN</Label>
-                  <Input value={form.gstin} onChange={(e) => setForm({ ...form, gstin: e.target.value.toUpperCase() })} placeholder="33AAHCR9756Q2ZE" maxLength={15} className="font-mono h-9 text-sm" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Address</Label>
-                  <Textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Full address" rows={2} className="text-sm" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Place of Supply</Label>
-                  <Input value={form.placeOfSupply} onChange={(e) => setForm({ ...form, placeOfSupply: e.target.value })} placeholder="Tamil Nadu (33)" className="h-9 text-sm" />
-                </div>
+                <div className="space-y-1"><Label className="text-xs">GSTIN</Label><Input value={form.gstin} onChange={(e) => setForm({ ...form, gstin: e.target.value.toUpperCase() })} placeholder="33AAHCR9756Q2ZE" maxLength={15} className="font-mono h-9 text-sm" /></div>
+                <div className="space-y-1"><Label className="text-xs">Address</Label><Textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="Full address" rows={2} className="text-sm" /></div>
+                <div className="space-y-1"><Label className="text-xs">Place of Supply</Label><Input value={form.placeOfSupply} onChange={(e) => setForm({ ...form, placeOfSupply: e.target.value })} placeholder="Tamil Nadu (33)" className="h-9 text-sm" /></div>
                 <Button type="button" onClick={handleSave}>{editing ? "Update" : "Save"}</Button>
               </div>
             </DialogContent>
@@ -127,9 +106,23 @@ const CustomersPage = ({ customers, addCustomer, updateCustomer, deleteCustomer 
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(c)}>
                       <Pencil className="h-3 w-3" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { deleteCustomer(c.id); toast.success("Customer deleted"); }}>
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive">
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete {c.name}?</AlertDialogTitle>
+                          <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(c.id)} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               </Card>

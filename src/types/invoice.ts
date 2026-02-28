@@ -1,6 +1,13 @@
-export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue";
+export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue" | "cancelled";
 
 export type GstType = "intra" | "inter"; // intra = CGST+SGST, inter = IGST
+
+export interface StatusChange {
+  from: InvoiceStatus;
+  to: InvoiceStatus;
+  timestamp: string;
+  note?: string;
+}
 
 export interface SellerDetails {
   businessName: string;
@@ -45,6 +52,8 @@ export interface Invoice {
   status: InvoiceStatus;
   createdAt: string;
   gstType: GstType;
+  statusHistory?: StatusChange[];
+  paidDate?: string;
 }
 
 export const getItemTaxableValue = (item: LineItem) => item.quantity * item.unitPrice;
