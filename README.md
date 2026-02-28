@@ -1,73 +1,84 @@
-# Welcome to your Lovable project
+# PDF Invoicer — GST Invoice Generator
 
-## Project info
+A robust, offline-first invoice generator tailored for GST compliance. Built for small businesses and freelancers, this application prioritizes data privacy, offline capabilities, and zero-recurring-cost operations.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Key Features
 
-## How can I edit this code?
+- **Offline-First**: Generate invoices even without internet access. Data is stored locally using IndexedDB.
+- **Data Privacy**: No business data is sent to external servers by default.
+- **Free Cloud Backups**: Built-in integration with Google Drive allows users to back up their data securely to their personal accounts.
+- **Authentication**: Secure Firebase Authentication (Google and Email/Password).
+- **GST Compliant**: Built-in handling for CGST, SGST, IGST, and HSN/SAC codes.
+- **PWA Ready**: Installable as a progressive web app on desktop and mobile.
+- **Modern Tech Stack**: React, TypeScript, Vite, Tailwind CSS, shadcn/ui.
 
-There are several ways of editing your application.
+## Live Demo
 
-**Use Lovable**
+**[app.ishvaryahospitality.com](https://app.ishvaryahospitality.com)**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Local Development Setup
 
-Changes made via Lovable will be committed automatically to this repo.
+To run this project locally, you need the [Doppler CLI](https://docs.doppler.com/docs/install-cli) installed for secrets management.
 
-**Use your preferred IDE**
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/prithivrajmu/pdfinvoicer.git
+   cd pdfinvoicer
+   ```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+3. **Authenticate Doppler:**
+   ```bash
+   doppler login
+   # This will open a browser window to authenticate
+   ```
 
-Follow these steps:
+4. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+   *Note: This automatically fetches the `dev` environment secrets from Doppler and starts the Vite server.*
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Deployment Instructions
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Deployments are handled via Firebase Hosting and secrets are injected during the build step using Doppler.
 
-# Step 3: Install the necessary dependencies.
-npm i
+1. **Ensure you are authenticated:**
+   ```bash
+   doppler login
+   npx firebase login
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+2. **Deploy to Production:**
+   ```bash
+   npm run deploy
+   ```
+   *This command fetches the `prd` secrets from Doppler, builds the production bundle, and deploys the `dist` folder to Firebase Hosting.*
 
-**Edit a file directly in GitHub**
+### Adding a Custom Domain
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+To set up a custom domain (e.g., `app.example.com`):
 
-**Use GitHub Codespaces**
+1. Go to the [Firebase Console](https://console.firebase.google.com).
+2. Navigate to **Hosting**.
+3. Click **Add custom domain** and follow the DNS verification steps.
+4. Go to **Authentication > Settings > Authorized domains** and add your new custom domain.
+5. In the [Google Cloud Console](https://console.cloud.google.com), update your OAuth 2.0 Client ID to include the new custom domain in both **Authorized JavaScript origins** and **Authorized redirect URIs**.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Architecture & Design
 
-## What technologies are used for this project?
+For a deep dive into the High-Level Design (HLD) and Low-Level Design (LLD), please read [ARCHITECTURE.md](./ARCHITECTURE.md).
 
-This project is built with:
+## Tools Used
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- **Framework**: React via Vite
+- **Styling**: Tailwind CSS & shadcn/ui
+- **State Management**: Zustand
+- **Local DB**: Dexie.js (IndexedDB)
+- **Auth & Hosting**: Firebase
+- **PDF Generation**: jsPDF & html2canvas
+- **Secrets Management**: Doppler
