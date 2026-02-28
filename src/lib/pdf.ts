@@ -2,13 +2,14 @@ import { Invoice, SellerDetails, getItemTaxableValue, getItemGst, getInvoiceSubt
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+const fmt = (n: number) => n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 export const generateInvoicePDF = (invoice: Invoice, seller: SellerDetails) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const subtotal = getInvoiceSubtotal(invoice.items);
   const totalGst = getInvoiceTotalGst(invoice.items);
   const total = getInvoiceTotal(invoice.items);
-  const fmt = (n: number) => "₹" + n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   // Header - Business Name
   doc.setFontSize(16);
@@ -64,7 +65,7 @@ export const generateInvoicePDF = (invoice: Invoice, seller: SellerDetails) => {
 
   const tableStartY = Math.max(custY, detailY + 26) + 4;
 
-  // Items table
+  // Items table with proper CGST/SGST half-rate breakdown
   const isIntra = invoice.gstType === "intra";
   const head = isIntra
     ? [["Sr.", "Name of Product / Service", "HSN/SAC", "Qty", "Rate", "Taxable Value", "CGST %", "CGST Amt", "SGST %", "SGST Amt", "Total"]]
@@ -76,30 +77,31 @@ export const generateInvoicePDF = (invoice: Invoice, seller: SellerDetails) => {
     const itemTotal = taxable + gst;
     const halfRate = item.gstRate / 2;
     const halfGst = gst / 2;
+    const displayName = item.itemName + (item.description ? `\n${item.description}` : "");
 
     if (isIntra) {
       return [
         String(i + 1),
-        item.description,
+        displayName,
         item.hsnSac,
-        `${item.quantity} ${item.unit}`,
+        `${fmt(item.quantity)} ${item.unit}`,
         fmt(item.unitPrice),
         fmt(taxable),
-        `${halfRate}%`,
+        `${fmt(halfRate)}%`,
         fmt(halfGst),
-        `${halfRate}%`,
+        `${fmt(halfRate)}%`,
         fmt(halfGst),
         fmt(itemTotal),
       ];
     }
     return [
       String(i + 1),
-      item.description,
+      displayName,
       item.hsnSac,
-      `${item.quantity} ${item.unit}`,
+      `${fmt(item.quantity)} ${item.unit}`,
       fmt(item.unitPrice),
       fmt(taxable),
-      `${item.gstRate}%`,
+      `${fmt(item.gstRate)}%`,
       fmt(gst),
       fmt(itemTotal),
     ];
