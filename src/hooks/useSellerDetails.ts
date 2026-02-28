@@ -12,6 +12,11 @@ const defaultSeller: SellerDetails = {
   cityState: "",
   pincode: "",
   gstin: "",
+  bankName: "",
+  accountNumber: "",
+  ifsc: "",
+  upiId: "",
+  defaultNotes: "",
 };
 
 const loadSeller = (): SellerDetails => {

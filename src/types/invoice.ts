@@ -11,6 +11,11 @@ export interface SellerDetails {
   cityState: string;
   pincode: string;
   gstin: string;
+  bankName: string;
+  accountNumber: string;
+  ifsc: string;
+  upiId: string;
+  defaultNotes: string;
 }
 
 export interface LineItem {

@@ -48,7 +48,7 @@ export const InvoiceForm = ({ invoiceNumber, seller, customers, addCustomer, onS
     new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0]
   );
   const [items, setItems] = useState<LineItem[]>([createLineItem()]);
-  const [notes, setNotes] = useState("");
+  const [notes, setNotes] = useState(seller.defaultNotes || "");
   const [showNewCustomer, setShowNewCustomer] = useState(false);
   const [newCust, setNewCust] = useState({ name: "", phone: "", email: "", address: "", gstin: "", placeOfSupply: "" });
 
