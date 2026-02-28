@@ -15,6 +15,7 @@ export interface SellerDetails {
 
 export interface LineItem {
   id: string;
+  itemName: string;
   description: string;
   hsnSac: string;
   quantity: number;
