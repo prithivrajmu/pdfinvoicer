@@ -18,8 +18,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico"],
       manifest: {
-        name: "PDFInvoicer - GST Invoice Generator",
-        short_name: "PDFInvoicer",
+        name: "Ishvarya Hospitality - GST Invoice Generator",
+        short_name: "Ishvarya",
         description: "Create GST-compliant tax invoices and download as PDF. Works offline.",
         theme_color: "#2563eb",
         background_color: "#f8fafc",

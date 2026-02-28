@@ -62,10 +62,9 @@ const LoginPage = () => {
             <div className="w-full max-w-sm space-y-6 animate-fade-in">
                 {/* Logo */}
                 <div className="text-center space-y-2">
-                    <div className="h-14 w-14 mx-auto rounded-2xl bg-primary/10 flex items-center justify-center">
-                        <FileText className="h-7 w-7 text-primary" />
+                    <div className="h-16 w-auto mx-auto flex items-center justify-center">
+                        <img src="/logo.png" alt="Ishvarya Hospitality" className="h-16 object-contain" />
                     </div>
-                    <h1 className="text-2xl font-bold tracking-tight">PDFInvoicer</h1>
                     <p className="text-sm text-muted-foreground">
                         GST-compliant invoice generator
                     </p>
@@ -166,8 +165,8 @@ const LoginPage = () => {
                     <br />
                     No data is sent to any server.
                 </p>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 
