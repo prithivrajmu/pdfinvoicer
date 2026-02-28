@@ -8,7 +8,7 @@
     "build": "doppler run -- vite build",
     "dev:local": "vite",
     "build:local": "vite build",
-    "deploy": "doppler run -c prd -- vite build && firebase deploy --only hosting",
+    "deploy": "doppler run -p pdfinvoicer -c prd -- npm run build:local && firebase deploy --only hosting",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
