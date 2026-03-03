@@ -9,9 +9,10 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Plus, Search, FileText, Settings, Users, LogOut, TrendingUp,
-  AlertCircle, CheckCircle2, Clock, BarChart3,
+  AlertCircle, CheckCircle2, Clock, BarChart3, HelpCircle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useTutorial } from "@/contexts/TutorialContext";
 import type { InvoiceStatus } from "@/types/invoice";
 
 const statusFilters: { label: string; value: InvoiceStatus | "all" }[] = [
@@ -28,6 +29,16 @@ const Index = () => {
   const { invoices, dataLoaded, checkOverdueInvoices } = useAppStore();
   const [filter, setFilter] = useState<InvoiceStatus | "all">("all");
   const [search, setSearch] = useState("");
+  const { start: startTutorial, isActive: tutorialActive, hasCompleted: tutorialCompleted } = useTutorial();
+
+  // Auto-start tutorial only on the user's very first login
+  useEffect(() => {
+    if (dataLoaded && userId && !tutorialCompleted()) {
+      const t = setTimeout(() => startTutorial(), 500);
+      return () => clearTimeout(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataLoaded, userId]);
 
   // Auto-detect overdue invoices on load
   useEffect(() => {
@@ -89,7 +100,16 @@ const Index = () => {
             </p>
           </div>
           <div className="flex gap-1.5">
-            <Link to="/customers">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground"
+              onClick={() => startTutorial()}
+              title="Tutorial"
+            >
+              <HelpCircle className="h-3.5 w-3.5" />
+            </Button>
+            <Link to="/customers" id="nav-customers">
               <Button variant="outline" size="sm" className="h-8 text-xs hidden sm:flex">
                 <Users className="h-3.5 w-3.5 mr-1" /> Customers
               </Button>
@@ -97,7 +117,7 @@ const Index = () => {
                 <Users className="h-3.5 w-3.5" />
               </Button>
             </Link>
-            <Link to="/settings">
+            <Link to="/settings" id="nav-settings">
               <Button variant="outline" size="icon" className="h-8 w-8">
                 <Settings className="h-3.5 w-3.5" />
               </Button>
@@ -113,7 +133,7 @@ const Index = () => {
                 <LogOut className="h-3.5 w-3.5" />
               </Button>
             )}
-            <Link to="/new">
+            <Link to="/new" id="nav-new-invoice">
               <Button size="sm" className="h-8 text-xs">
                 <Plus className="h-3.5 w-3.5 mr-1" /> New
               </Button>
@@ -122,7 +142,7 @@ const Index = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+        <div id="stats-section" className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           <Card className="p-3 sm:p-4">
             <div className="flex items-center gap-2 mb-1">
               <BarChart3 className="h-3.5 w-3.5 text-muted-foreground" />

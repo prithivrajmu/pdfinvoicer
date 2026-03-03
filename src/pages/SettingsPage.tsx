@@ -83,7 +83,7 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        <Card>
+        <Card id="settings-business-card">
           <CardHeader className="px-4 pb-3"><CardTitle className="text-sm">Business Information</CardTitle><CardDescription className="text-xs">Appears at the top of your invoices</CardDescription></CardHeader>
           <CardContent className="grid gap-3 sm:grid-cols-2 px-4">
             <div className="space-y-1 sm:col-span-2"><Label className="text-xs">Business Name</Label><Input required value={seller.businessName} onChange={(e) => handleUpdate({ businessName: e.target.value })} placeholder="Ishvarya Hospitality Solutions" className="h-9 text-sm" /></div>

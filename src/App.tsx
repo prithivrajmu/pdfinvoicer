@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { TutorialProvider } from "@/contexts/TutorialContext";
 import { useAppStore } from "@/stores/appStore";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
@@ -54,19 +55,21 @@ const AppRoutes = () => {
   }, [user, userId, isConfigured, loadData, clearStoreData]);
 
   return (
-    <Routes>
-      <Route path="/login" element={
-        isConfigured && user ? <Navigate to="/" replace /> :
-          !isConfigured ? <Navigate to="/" replace /> :
-            <LoginPage />
-      } />
-      <Route path="/" element={<AuthGuard><Index /></AuthGuard>} />
-      <Route path="/new" element={<AuthGuard><CreateInvoice /></AuthGuard>} />
-      <Route path="/invoice/:id" element={<AuthGuard><InvoiceDetailPage /></AuthGuard>} />
-      <Route path="/settings" element={<AuthGuard><SettingsPage /></AuthGuard>} />
-      <Route path="/customers" element={<AuthGuard><CustomersPage /></AuthGuard>} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <TutorialProvider userId={userId}>
+      <Routes>
+        <Route path="/login" element={
+          isConfigured && user ? <Navigate to="/" replace /> :
+            !isConfigured ? <Navigate to="/" replace /> :
+              <LoginPage />
+        } />
+        <Route path="/" element={<AuthGuard><Index /></AuthGuard>} />
+        <Route path="/new" element={<AuthGuard><CreateInvoice /></AuthGuard>} />
+        <Route path="/invoice/:id" element={<AuthGuard><InvoiceDetailPage /></AuthGuard>} />
+        <Route path="/settings" element={<AuthGuard><SettingsPage /></AuthGuard>} />
+        <Route path="/customers" element={<AuthGuard><CustomersPage /></AuthGuard>} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </TutorialProvider>
   );
 };
 

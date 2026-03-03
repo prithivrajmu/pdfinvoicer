@@ -18,7 +18,9 @@ A robust, offline-first invoice generator tailored for GST compliance. Built for
 
 ## Local Development Setup
 
-To run this project locally, you need the [Doppler CLI](https://docs.doppler.com/docs/install-cli) installed for secrets management.
+### Quick Start (without Doppler)
+
+The fastest way to run locally — no secrets manager needed. The app works in **offline mode** (no auth, data stored in IndexedDB).
 
 1. **Clone the repository:**
    ```bash
@@ -31,21 +33,50 @@ To run this project locally, you need the [Doppler CLI](https://docs.doppler.com
    npm install
    ```
 
-3. **Authenticate Doppler:**
+3. **(Optional) Set up Firebase environment variables:**
    ```bash
-   doppler login
-   # This will open a browser window to authenticate
+   cp .env.example .env
    ```
+   Edit `.env` and fill in your Firebase project credentials. If you skip this step, the app runs in offline mode without authentication or Google Drive backup.
 
 4. **Start the development server:**
    ```bash
+   npm run dev:local
+   ```
+   The app will be available at `http://localhost:5173/`.
+
+### With Doppler (for project maintainers)
+
+If you have access to the project's [Doppler](https://docs.doppler.com/docs/install-cli) secrets:
+
+1. **Authenticate and link the project:**
+   ```bash
+   doppler login
+   doppler setup          # Select project: pdfinvoicer, config: dev
+   ```
+
+2. **Start the development server:**
+   ```bash
    npm run dev
    ```
-   *Note: This automatically fetches the `dev` environment secrets from Doppler and starts the Vite server.*
+   This fetches the `dev` environment secrets from Doppler and starts the Vite server.
+
+## Available Scripts
+
+| Command | Description |
+|---|---|
+| `npm run dev:local` | Start dev server (reads `.env` file) |
+| `npm run dev` | Start dev server via Doppler secrets |
+| `npm run build:local` | Production build (reads `.env` file) |
+| `npm run build` | Production build via Doppler secrets |
+| `npm run deploy` | Build with `prd` secrets + deploy to Firebase Hosting |
+| `npm run lint` | Run ESLint |
+| `npm test` | Run tests |
+| `npm run preview` | Preview the production build locally |
 
 ## Deployment Instructions
 
-Deployments are handled via Firebase Hosting and secrets are injected during the build step using Doppler.
+Deployments are handled via Firebase Hosting. Secrets are injected during the build step using Doppler.
 
 1. **Ensure you are authenticated:**
    ```bash
@@ -57,7 +88,7 @@ Deployments are handled via Firebase Hosting and secrets are injected during the
    ```bash
    npm run deploy
    ```
-   *This command fetches the `prd` secrets from Doppler, builds the production bundle, and deploys the `dist` folder to Firebase Hosting.*
+   This fetches the `prd` secrets from Doppler, builds the production bundle, and deploys the `dist` folder to Firebase Hosting.
 
 ### Adding a Custom Domain
 

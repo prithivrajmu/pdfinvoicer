@@ -65,7 +65,7 @@ const CustomersPage = () => {
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="text-xs h-8" onClick={openNew}>
+              <Button id="customers-add-btn" size="sm" className="text-xs h-8" onClick={openNew}>
                 <Plus className="h-3 w-3 mr-1" /> Add
               </Button>
             </DialogTrigger>
