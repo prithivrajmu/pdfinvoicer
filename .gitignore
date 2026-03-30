@@ -28,3 +28,7 @@ dist-ssr
 
 #Analysis
 analysis.md
+
+# Local generated state
+.firebase/
+.prstack/
