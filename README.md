@@ -1,5 +1,7 @@
 # PDF Invoicer
 
+![PDF Invoicer preview](./docs/github-preview.png)
+
 PDF Invoicer is an offline-first GST invoice system built for small businesses that need dependable invoicing without turning their day-to-day workflow into a SaaS dependency.
 
 The product is designed around three constraints:
