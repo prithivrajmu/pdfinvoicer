@@ -1,115 +1,107 @@
-# PDF Invoicer — GST Invoice Generator
+# PDF Invoicer
 
-A robust, offline-first invoice generator tailored for GST compliance. Built for small businesses and freelancers, this application prioritizes data privacy, offline capabilities, and zero-recurring-cost operations.
+PDF Invoicer is an offline-first GST invoice system built for small businesses that need dependable invoicing without turning their day-to-day workflow into a SaaS dependency.
 
-## Key Features
+The product is designed around three constraints:
 
-- **Offline-First**: Generate invoices even without internet access. Data is stored locally using IndexedDB.
-- **Data Privacy**: No business data is sent to external servers by default.
-- **Free Cloud Backups**: Built-in integration with Google Drive allows users to back up their data securely to their personal accounts.
-- **Authentication**: Secure Firebase Authentication (Google and Email/Password).
-- **GST Compliant**: Built-in handling for CGST, SGST, IGST, and HSN/SAC codes.
-- **PWA Ready**: Installable as a progressive web app on desktop and mobile.
-- **Modern Tech Stack**: React, TypeScript, Vite, Tailwind CSS, shadcn/ui.
+- the app should still work without internet
+- business data should stay local by default
+- backups and authentication should be optional layers, not prerequisites for invoicing
 
-## Live Demo
+## What It Does
 
-**[app.ishvaryahospitality.com](https://app.ishvaryahospitality.com)**
+- creates GST-compliant invoices with CGST, SGST, IGST, and HSN or SAC handling
+- stores invoices, customers, and seller details locally using IndexedDB
+- works in offline mode when Firebase configuration is not present
+- supports Google and email or password sign-in when auth is enabled
+- offers optional Google Drive backup for user-owned recovery
+- ships as a PWA for desktop and mobile installation
 
-## Local Development Setup
+## Live App
 
-### Quick Start (without Doppler)
+[app.ishvaryahospitality.com](https://app.ishvaryahospitality.com)
 
-The fastest way to run locally — no secrets manager needed. The app works in **offline mode** (no auth, data stored in IndexedDB).
+## Why It Exists
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/prithivrajmu/pdfinvoicer.git
-   cd pdfinvoicer
-   ```
+A lot of invoicing tools assume permanent connectivity, server-side data ownership, and recurring payment logic from the start. This project takes a different position: keep the invoicing workflow reliable on the device first, then layer backup and identity on top where they are useful.
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+That makes it a practical product for small teams that care about privacy, continuity, and low operational overhead.
 
-3. **(Optional) Set up Firebase environment variables:**
-   ```bash
-   cp .env.example .env
-   ```
-   Edit `.env` and fill in your Firebase project credentials. If you skip this step, the app runs in offline mode without authentication or Google Drive backup.
+## Stack
 
-4. **Start the development server:**
-   ```bash
-   npm run dev:local
-   ```
-   The app will be available at `http://localhost:5173/`.
+- React
+- TypeScript
+- Vite
+- Zustand
+- Dexie.js / IndexedDB
+- Firebase Authentication
+- Google Drive API
+- jsPDF
+- PWA via `vite-plugin-pwa`
 
-### With Doppler (for project maintainers)
+## Local Development
 
-If you have access to the project's [Doppler](https://docs.doppler.com/docs/install-cli) secrets:
+### Fastest path: local offline mode
 
-1. **Authenticate and link the project:**
-   ```bash
-   doppler login
-   doppler setup          # Select project: pdfinvoicer, config: dev
-   ```
+```bash
+git clone https://github.com/prithivrajmu/pdfinvoicer.git
+cd pdfinvoicer
+npm install
+npm run dev:local
+```
 
-2. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
-   This fetches the `dev` environment secrets from Doppler and starts the Vite server.
+This starts the app without Doppler. If Firebase environment variables are missing, the app still works in offline mode with local persistence.
 
-## Available Scripts
+### Optional Firebase setup
 
-| Command | Description |
+```bash
+cp .env.example .env
+```
+
+Fill in your Firebase configuration if you want authentication and Google Drive backup enabled locally.
+
+### Maintainer flow with Doppler
+
+```bash
+doppler login
+doppler setup
+npm run dev
+```
+
+## Commands
+
+| Command | Purpose |
 |---|---|
-| `npm run dev:local` | Start dev server (reads `.env` file) |
-| `npm run dev` | Start dev server via Doppler secrets |
-| `npm run build:local` | Production build (reads `.env` file) |
-| `npm run build` | Production build via Doppler secrets |
-| `npm run deploy` | Build with `prd` secrets + deploy to Firebase Hosting |
+| `npm run dev:local` | Run locally using `.env` values or offline mode |
+| `npm run dev` | Run locally with Doppler secrets |
+| `npm run build:local` | Local production build |
+| `npm run build` | Production build with Doppler |
+| `npm run deploy` | Production build and Firebase Hosting deploy |
+| `npm run test` | Run tests |
 | `npm run lint` | Run ESLint |
-| `npm test` | Run tests |
-| `npm run preview` | Preview the production build locally |
+| `npm run preview` | Preview the production build |
 
-## Deployment Instructions
+## Deployment
 
-Deployments are handled via Firebase Hosting. Secrets are injected during the build step using Doppler.
+The app is deployed on Firebase Hosting. Production secrets are injected through Doppler.
 
-1. **Ensure you are authenticated:**
-   ```bash
-   doppler login
-   npx firebase login
-   ```
+```bash
+doppler login
+npx firebase login
+npm run deploy
+```
 
-2. **Deploy to Production:**
-   ```bash
-   npm run deploy
-   ```
-   This fetches the `prd` secrets from Doppler, builds the production bundle, and deploys the `dist` folder to Firebase Hosting.
+## Architecture
 
-### Adding a Custom Domain
+The architecture is documented in [ARCHITECTURE.md](./ARCHITECTURE.md). At a high level:
 
-To set up a custom domain (e.g., `app.example.com`):
+- the client owns business logic and PDF generation
+- IndexedDB is the primary data store
+- Firebase handles identity when configured
+- Google Drive backup is optional and user-owned
+- the product remains usable even when those hosted services are unavailable
 
-1. Go to the [Firebase Console](https://console.firebase.google.com).
-2. Navigate to **Hosting**.
-3. Click **Add custom domain** and follow the DNS verification steps.
-4. Go to **Authentication > Settings > Authorized domains** and add your new custom domain.
-5. In the [Google Cloud Console](https://console.cloud.google.com), update your OAuth 2.0 Client ID to include the new custom domain in both **Authorized JavaScript origins** and **Authorized redirect URIs**.
+## Notes
 
-## Architecture & Design
-
-For a deep dive into the High-Level Design (HLD) and Low-Level Design (LLD), please read [ARCHITECTURE.md](./ARCHITECTURE.md).
-
-## Tools Used
-
-- **Framework**: React via Vite
-- **Styling**: Tailwind CSS & shadcn/ui
-- **State Management**: Zustand
-- **Local DB**: Dexie.js (IndexedDB)
-- **Auth & Hosting**: Firebase
-- **PDF Generation**: jsPDF & html2canvas
-- **Secrets Management**: Doppler
+- This repo is intentionally optimized around reliability and low recurring cost, not around a backend-heavy architecture.
+- Offline mode is a real operating mode, not a degraded placeholder.

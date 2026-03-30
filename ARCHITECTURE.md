@@ -1,6 +1,6 @@
 # Architecture Document
 
-This document outlines the architecture of the **PDFInvoicer** application. The system is designed to provide enterprise-grade capabilities (authentication, data persistence, backups) while prioritizing zero server maintenance costs and an offline-first experience.
+This document describes the architecture of **PDF Invoicer**, an offline-first GST invoice system built to keep invoicing reliable on the client while minimizing backend cost and operational dependency.
 
 ## High-Level Design (HLD)
 
