@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppStore } from "@/stores/appStore";
@@ -7,9 +7,10 @@ import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { exportToJSON, importFromJSON } from "@/lib/backup";
 import {
-  Plus, Search, FileText, Settings, Users, LogOut, TrendingUp,
-  AlertCircle, CheckCircle2, Clock, BarChart3, HelpCircle,
+  Plus, Search, FileText, Settings, Users, LogOut,
+  AlertCircle, CheckCircle2, Clock, BarChart3, HelpCircle, Download, Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useTutorial } from "@/contexts/TutorialContext";
@@ -26,10 +27,12 @@ const statusFilters: { label: string; value: InvoiceStatus | "all" }[] = [
 
 const Index = () => {
   const { user, logout, userId, isConfigured } = useAuth();
-  const { invoices, dataLoaded, checkOverdueInvoices } = useAppStore();
+  const { invoices, dataLoaded, checkOverdueInvoices, loadData } = useAppStore();
   const [filter, setFilter] = useState<InvoiceStatus | "all">("all");
   const [search, setSearch] = useState("");
-  const { start: startTutorial, isActive: tutorialActive, hasCompleted: tutorialCompleted } = useTutorial();
+  const [backupBusy, setBackupBusy] = useState<"import" | "export" | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { start: startTutorial, hasCompleted: tutorialCompleted } = useTutorial();
 
   // Auto-start tutorial only on the user's very first login
   useEffect(() => {
@@ -77,6 +80,49 @@ const Index = () => {
       await logout();
     } catch {
       toast.error("Failed to sign out");
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      setBackupBusy("export");
+      await exportToJSON(userId);
+      toast.success("JSON export downloaded");
+    } catch {
+      toast.error("Failed to export data");
+    } finally {
+      setBackupBusy(null);
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const confirmed = window.confirm(
+      "Importing a backup will replace your current invoices, customers, and business details on this device. Continue?"
+    );
+
+    if (!confirmed) {
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      setBackupBusy("import");
+      const result = await importFromJSON(userId, file);
+      await loadData(userId);
+      toast.success(`Imported ${result.invoiceCount} invoices and ${result.customerCount} customers`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to import backup";
+      toast.error(message);
+    } finally {
+      event.target.value = "";
+      setBackupBusy(null);
     }
   };
 
@@ -196,6 +242,35 @@ const Index = () => {
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 h-9 text-sm"
             />
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={handleImportFile}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs h-8"
+              onClick={handleExport}
+              disabled={backupBusy !== null}
+            >
+              <Download className="h-3.5 w-3.5 mr-1" />
+              {backupBusy === "export" ? "Exporting..." : "Export JSON"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs h-8"
+              onClick={handleImportClick}
+              disabled={backupBusy !== null}
+            >
+              <Upload className="h-3.5 w-3.5 mr-1" />
+              {backupBusy === "import" ? "Importing..." : "Import JSON"}
+            </Button>
           </div>
           <div className="flex gap-1 overflow-x-auto pb-1">
             {statusFilters.map((f) => (

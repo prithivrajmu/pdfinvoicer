@@ -8,15 +8,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { generateInvoicePDF } from "@/lib/pdf";
-import { ArrowLeft, Download, Trash2, Clock } from "lucide-react";
+import { ArrowLeft, Clock, Copy, Download, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const InvoiceDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { userId } = useAuth();
-  const { getInvoice, updateInvoiceStatus, deleteInvoice, seller } = useAppStore();
+  const { getInvoice, updateInvoiceStatus, deleteInvoice, seller, dataLoaded } = useAppStore();
   const invoice = getInvoice(id!);
+
+  if (!dataLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
+        <div className="text-sm text-muted-foreground animate-pulse">Loading invoice...</div>
+      </div>
+    );
+  }
 
   if (!invoice) {
     return (
@@ -60,7 +68,13 @@ const InvoiceDetailPage = () => {
               <p className="text-sm text-muted-foreground">{invoice.clientName}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 ml-11 sm:ml-0">
+          <div className="flex flex-wrap items-center gap-2 ml-11 sm:ml-0">
+            <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => navigate(`/invoice/${invoice.id}/edit`)}>
+              <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+            </Button>
+            <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => navigate(`/invoice/${invoice.id}/duplicate`)}>
+              <Copy className="h-3.5 w-3.5 mr-1" /> Duplicate
+            </Button>
             <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => generateInvoicePDF(invoice, seller)}>
               <Download className="h-3.5 w-3.5 mr-1" /> PDF
             </Button>

@@ -64,6 +64,8 @@ const AppRoutes = () => {
         } />
         <Route path="/" element={<AuthGuard><Index /></AuthGuard>} />
         <Route path="/new" element={<AuthGuard><CreateInvoice /></AuthGuard>} />
+        <Route path="/invoice/:id/edit" element={<AuthGuard><CreateInvoice /></AuthGuard>} />
+        <Route path="/invoice/:id/duplicate" element={<AuthGuard><CreateInvoice /></AuthGuard>} />
         <Route path="/invoice/:id" element={<AuthGuard><InvoiceDetailPage /></AuthGuard>} />
         <Route path="/settings" element={<AuthGuard><SettingsPage /></AuthGuard>} />
         <Route path="/customers" element={<AuthGuard><CustomersPage /></AuthGuard>} />

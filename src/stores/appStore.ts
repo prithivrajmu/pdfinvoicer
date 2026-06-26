@@ -16,6 +16,7 @@ interface AppState {
 
     /* ── Actions: Invoices ── */
     addInvoice: (userId: string, invoice: Invoice) => Promise<void>;
+    updateInvoice: (userId: string, invoice: Invoice) => Promise<void>;
     updateInvoiceStatus: (userId: string, id: string, status: InvoiceStatus, note?: string) => Promise<void>;
     deleteInvoice: (userId: string, id: string) => Promise<void>;
     getInvoice: (id: string) => Invoice | undefined;
@@ -79,6 +80,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     addInvoice: async (userId, invoice) => {
         await db.invoices.put({ ...invoice, userId });
         set((s) => ({ invoices: [invoice, ...s.invoices] }));
+    },
+
+    updateInvoice: async (userId, invoice) => {
+        await db.invoices.put({ ...invoice, userId });
+        set((s) => ({
+            invoices: s.invoices.map((inv) => (inv.id === invoice.id ? invoice : inv)),
+        }));
     },
 
     updateInvoiceStatus: async (userId, id, status, note) => {
